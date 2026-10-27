@@ -4,44 +4,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Destinazione sorpresa</title>
+  <title>Lercio Random</title>
 </head>
 <body>
-  <p id="msg">Ricerca di una notizia assurda in corso...</p>
+  <p id="msg">Sto cercando una notizia assurda...</p>
 
   <script>
-    async function vaiAllaNotizia() {
+    (async function () {
       const msg = document.getElementById("msg");
 
       try {
         const url =
           "https://www.lercio.it/wp-json/wp/v2/posts" +
-          "?per_page=100&_fields=link&orderby=date&order=desc" +
-          "&_=" + Date.now();
+          "?per_page=20&_fields=link&orderby=date&order=desc";
 
         const risposta = await fetch(url, { cache: "no-store" });
 
-        if (!risposta.ok) throw new Error("Feed non disponibile");
+        if (!risposta.ok) {
+          throw new Error("Lercio ha risposto con errore HTTP " +
+            risposta.status);
+        }
 
         const articoli = await risposta.json();
-        const validi = articoli.filter(a => a.link);
 
-        if (!validi.length) throw new Error("Nessun articolo");
+        if (!Array.isArray(articoli) || articoli.length === 0) {
+          throw new Error("Il feed non contiene articoli");
+        }
 
-        const scelta =
-          validi[Math.floor(Math.random() * validi.length)];
+        const articolo =
+          articoli[Math.floor(Math.random() * articoli.length)];
 
-        msg.textContent = "Notizia trovata! Reindirizzamento...";
-        window.location.replace(scelta.link);
+        if (!articolo.link) {
+          throw new Error("Link articolo mancante");
+        }
+
+        msg.textContent = "Trovata! Ti porto su Lercio...";
+        window.location.replace(articolo.link);
 
       } catch (errore) {
         msg.textContent =
-          "Ops! Non riesco a trovare una notizia. " +
-          "Riprova tra poco.";
+          "Errore: " + errore.message +
+          ". Prova ad aprire il feed di Lercio direttamente.";
+        console.error(errore);
       }
-    }
-
-    vaiAllaNotizia();
+    })();
   </script>
 </body>
 </html>
