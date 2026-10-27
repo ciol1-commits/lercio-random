@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Destinazione sorpresa</title>
+</head>
+<body>
+  <p id="msg">Ricerca di una notizia assurda in corso...</p>
+
+  <script>
+    async function vaiAllaNotizia() {
+      const msg = document.getElementById("msg");
+
+      try {
+        const url =
+          "https://www.lercio.it/wp-json/wp/v2/posts" +
+          "?per_page=100&_fields=link&orderby=date&order=desc" +
+          "&_=" + Date.now();
+
+        const risposta = await fetch(url, { cache: "no-store" });
+
+        if (!risposta.ok) throw new Error("Feed non disponibile");
+
+        const articoli = await risposta.json();
+        const validi = articoli.filter(a => a.link);
+
+        if (!validi.length) throw new Error("Nessun articolo");
+
+        const scelta =
+          validi[Math.floor(Math.random() * validi.length)];
+
+        msg.textContent = "Notizia trovata! Reindirizzamento...";
+        window.location.replace(scelta.link);
+
+      } catch (errore) {
+        msg.textContent =
+          "Ops! Non riesco a trovare una notizia. " +
+          "Riprova tra poco.";
+      }
+    }
+
+    vaiAllaNotizia();
+  </script>
+</body>
+</html>
